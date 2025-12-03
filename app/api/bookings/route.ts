@@ -35,6 +35,8 @@ export async function GET(request: NextRequest) {
       include: {
         room: {
           select: {
+            : {
+          select: {
             id: true,
             name: true,
             capacity: true,
@@ -45,6 +47,12 @@ export async function GET(request: NextRequest) {
           select: {
             name: true,
             email: true,
+          },
+        },
+        rating: {
+          select: {
+            rating: true,
+            review: true,
           },
         },
       },
