@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Logo from "@/components/Logo";
 import Notifications from "@/components/Notifications";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { 
   LayoutDashboard, 
   Building2, 
@@ -39,8 +40,16 @@ export default function OwnerLayout({
     { href: "/dashboard/owner/credit-plans", label: "חבילות קרדיט", icon: CreditCard },
     { href: "/dashboard/owner/reports", label: "דוחות ונתונים", icon: BarChart3 },
     { href: "/dashboard/owner/reports/tax", label: "דוח מס", icon: FileText },
+    { href: "/dashboard/owner/reports/usage", label: "דוח שימוש", icon: BarChart3 },
+    { href: "/dashboard/owner/reports/heatmap", label: "מפת חום", icon: BarChart3 },
+    { href: "/dashboard/owner/quotes", label: "הצעות מחיר", icon: FileText },
+    { href: "/dashboard/owner/waitlist", label: "רשימת המתנה", icon: Calendar },
+    { href: "/dashboard/owner/automation", label: "אוטומציה", icon: Settings },
+    { href: "/dashboard/owner/webhooks", label: "Webhooks", icon: Settings },
+    { href: "/dashboard/owner/audit-log", label: "לוג פעילות", icon: FileText },
     { href: "/dashboard/owner/overuse-payments", label: "תשלומי חריגה", icon: AlertCircle },
     { href: "/dashboard/owner/branding", label: "התאמה אישית", icon: Settings },
+    { href: "/dashboard/owner/support", label: "תמיכה", icon: Settings },
   ];
 
   const isActive = (path: string) => {
@@ -139,6 +148,9 @@ export default function OwnerLayout({
           {/* Right Side: Actions & Profile */}
           <div className="flex items-center gap-3 lg:gap-6">
             <Notifications />
+            
+            {/* Language Switcher */}
+            <LanguageSwitcher />
             
             <div className="h-8 w-px bg-gray-200 hidden lg:block"></div>
 
