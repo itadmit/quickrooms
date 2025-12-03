@@ -326,7 +326,7 @@ export default function MyBookingsPage() {
           <div className="text-2xl font-bold text-gray-600">{stats.past}</div>
         </div>
         <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-          <div className="text-xs text-gray-500 mb-1">סה"כ שעות</div>
+          <div className="text-xs text-gray-500 mb-1">סה&quot;כ שעות</div>
           <div className="text-2xl font-bold text-purple-600">{stats.totalHours}</div>
         </div>
       </div>

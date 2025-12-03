@@ -117,7 +117,7 @@ export default function BookingsPage() {
             <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
               <Calendar className="w-5 h-5 text-blue-600" />
             </div>
-            <span className="text-sm font-medium text-gray-500">סה"כ הזמנות</span>
+            <span className="text-sm font-medium text-gray-500">סה&quot;כ הזמנות</span>
           </div>
           <p className="text-3xl font-bold text-gray-900">{bookings.length}</p>
         </div>

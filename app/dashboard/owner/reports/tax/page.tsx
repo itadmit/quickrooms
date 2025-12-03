@@ -44,10 +44,10 @@ export default function TaxReportPage() {
       [`תקופה: ${filters.startDate} - ${filters.endDate}`],
       [""],
       ["סיכום"],
-      [`סה"כ הכנסות`, report.summary.totalRevenue],
-      [`הכנסות לפני מע"מ`, report.summary.revenueBeforeVat],
-      [`שיעור מע"מ`, report.summary.vatRate],
-      [`סכום מע"מ`, report.summary.vatAmount],
+      [`סה&quot;כ הכנסות`, report.summary.totalRevenue],
+      [`הכנסות לפני מע&quot;מ`, report.summary.revenueBeforeVat],
+      [`שיעור מע&quot;מ`, report.summary.vatRate],
+      [`סכום מע&quot;מ`, report.summary.vatAmount],
       [`מספר עסקאות`, report.summary.totalTransactions],
       [""],
       ["פירוט עסקאות"],
@@ -72,7 +72,7 @@ export default function TaxReportPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">דוח מס ערך מוסף</h1>
-        <p className="text-gray-500 text-sm mt-1">דוח מע"מ והכנסות לפי תקופות</p>
+        <p className="text-gray-500 text-sm mt-1">דוח מע&quot;מ והכנסות לפי תקופות</p>
       </div>
 
       {/* Filters */}
@@ -102,7 +102,7 @@ export default function TaxReportPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              שיעור מע"מ (%)
+              שיעור מע&quot;מ (%)
             </label>
             <input
               type="number"
@@ -142,19 +142,19 @@ export default function TaxReportPage() {
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
-              <div className="text-sm text-blue-700 mb-1">סה"כ הכנסות</div>
+              <div className="text-sm text-blue-700 mb-1">סה&quot;כ הכנסות</div>
               <div className="text-2xl font-bold text-blue-900">
                 ₪{parseFloat(report.summary.totalRevenue).toLocaleString()}
               </div>
             </div>
             <div className="bg-green-50 rounded-xl p-4 border border-green-100">
-              <div className="text-sm text-green-700 mb-1">הכנסות לפני מע"מ</div>
+              <div className="text-sm text-green-700 mb-1">הכנסות לפני מע&quot;מ</div>
               <div className="text-2xl font-bold text-green-900">
                 ₪{parseFloat(report.summary.revenueBeforeVat).toLocaleString()}
               </div>
             </div>
             <div className="bg-purple-50 rounded-xl p-4 border border-purple-100">
-              <div className="text-sm text-purple-700 mb-1">סכום מע"מ</div>
+              <div className="text-sm text-purple-700 mb-1">סכום מע&quot;מ</div>
               <div className="text-2xl font-bold text-purple-900">
                 ₪{parseFloat(report.summary.vatAmount).toLocaleString()}
               </div>

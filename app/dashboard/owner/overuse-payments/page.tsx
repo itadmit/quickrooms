@@ -79,7 +79,7 @@ export default function OverusePaymentsPage() {
             <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
               <DollarSign className="w-5 h-5 text-emerald-600" />
             </div>
-            <span className="text-sm font-medium text-gray-500">סה"כ הכנסות</span>
+            <span className="text-sm font-medium text-gray-500">סה&quot;כ הכנסות</span>
           </div>
           <p className="text-3xl font-bold text-gray-900">₪{totalAmount.toFixed(2)}</p>
         </div>
@@ -89,7 +89,7 @@ export default function OverusePaymentsPage() {
             <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
               <CreditCard className="w-5 h-5 text-blue-600" />
             </div>
-            <span className="text-sm font-medium text-gray-500">סה"כ תשלומים</span>
+            <span className="text-sm font-medium text-gray-500">סה&quot;כ תשלומים</span>
           </div>
           <p className="text-3xl font-bold text-gray-900">{payments.length}</p>
         </div>

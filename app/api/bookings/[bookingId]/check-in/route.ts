@@ -31,7 +31,7 @@ export async function POST(
 
     // בדיקת הרשאות
     if (user.role === 'MEMBER' && booking.memberId !== user.id) {
-      return NextResponse.json({ error: 'אין הרשאה' }, { status:  ' }, { status: 403 });
+      return NextResponse.json({ error: 'אין הרשאה' }, { status: 403 });
     }
 
     if (booking.checkedIn) {

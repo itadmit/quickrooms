@@ -235,7 +235,7 @@ export default function MemberProfilePage() {
               <div className="text-2xl font-bold text-green-600">
                 ₪{member.stats.totalSpent.toFixed(0)}
               </div>
-              <div className="text-xs text-green-700 mt-1">סה"כ הוצאות</div>
+              <div className="text-xs text-green-700 mt-1">סה&quot;כ הוצאות</div>
             </div>
           </div>
         </div>

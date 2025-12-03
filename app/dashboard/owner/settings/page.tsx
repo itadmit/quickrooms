@@ -436,7 +436,7 @@ export default function OwnerSettingsPage() {
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
             <div>
               <div className="text-sm font-medium text-gray-900">הפעל שליחת אימיילים</div>
-              <div className="text-xs text-gray-500 mt-1">שלח אימיילים אוטומטיים ל-Members (תזכורות, אישורים וכו')</div>
+              <div className="text-xs text-gray-500 mt-1">שלח אימיילים אוטומטיים ל-Members (תזכורות, אישורים וכו&apos;)</div>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
@@ -538,8 +538,8 @@ export default function OwnerSettingsPage() {
                       <li>היכנס ל-<a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" className="underline">Google Account Security</a></li>
                       <li>הפעל <strong>2-Step Verification</strong> (אם לא מופעל)</li>
                       <li>לך ל-<a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="underline">App Passwords</a></li>
-                      <li>בחר "Mail" ו-"Other (Custom name)"</li>
-                      <li>הזן שם: "Quick Rooms"</li>
+                      <li>בחר &quot;Mail&quot; ו-&quot;Other (Custom name)&quot;</li>
+                      <li>הזן שם: &quot;Quick Rooms&quot;</li>
                       <li>העתק את ה-App Password (16 תווים) והזן אותו למעלה</li>
                     </ol>
                     <p className="mt-2 text-xs font-medium">הערה: השתמש ב-App Password ולא בסיסמה הרגילה!</p>

@@ -1,4 +1,4 @@
-import { prisma } from './prisma';
+import { prisma } from '@/lib/prisma';
 import { addDays, addWeeks, addMonths, isSameDay, getDay } from 'date-fns';
 
 export interface RecurringPattern {

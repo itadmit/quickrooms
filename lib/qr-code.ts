@@ -1,4 +1,4 @@
-import { prisma } from './prisma';
+import { prisma } from '@/lib/prisma';
 import crypto from 'crypto';
 
 export async function generateQRCodeForBooking(bookingId: string) {

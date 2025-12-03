@@ -81,21 +81,21 @@ export default function UsageReportPage() {
             <div className="bg-white rounded-xl p-6 border border-gray-100">
               <div className="flex items-center gap-3 mb-2">
                 <BarChart3 className="w-5 h-5 text-indigo-600" />
-                <div className="text-sm text-gray-600">סה"כ הזמנות</div>
+                <div className="text-sm text-gray-600">סה&quot;כ הזמנות</div>
               </div>
               <div className="text-3xl font-bold text-gray-900">{report.summary.totalBookings}</div>
             </div>
             <div className="bg-white rounded-xl p-6 border border-gray-100">
               <div className="flex items-center gap-3 mb-2">
                 <Clock className="w-5 h-5 text-blue-600" />
-                <div className="text-sm text-gray-600">סה"כ שעות</div>
+                <div className="text-sm text-gray-600">סה&quot;כ שעות</div>
               </div>
               <div className="text-3xl font-bold text-gray-900">{report.summary.totalHours}</div>
             </div>
             <div className="bg-white rounded-xl p-6 border border-gray-100">
               <div className="flex items-center gap-3 mb-2">
                 <DollarSign className="w-5 h-5 text-green-600" />
-                <div className="text-sm text-gray-600">סה"כ הכנסות</div>
+                <div className="text-sm text-gray-600">סה&quot;כ הכנסות</div>
               </div>
               <div className="text-3xl font-bold text-gray-900">
                 ₪{report.summary.totalRevenue.toFixed(0)}

@@ -39,7 +39,7 @@ export default function ReportsPage() {
             <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
               <DollarSign className="w-5 h-5 text-emerald-600" />
             </div>
-            <span className="text-sm font-medium text-gray-500">סה"כ הכנסות</span>
+            <span className="text-sm font-medium text-gray-500">סה&quot;כ הכנסות</span>
           </div>
           <p className="text-3xl font-bold text-gray-900 mb-1">₪{stats.totalRevenue.toLocaleString()}</p>
           <div className="flex items-center gap-1 text-xs text-green-600">
@@ -53,7 +53,7 @@ export default function ReportsPage() {
             <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
               <Calendar className="w-5 h-5 text-blue-600" />
             </div>
-            <span className="text-sm font-medium text-gray-500">סה"כ הזמנות</span>
+            <span className="text-sm font-medium text-gray-500">סה&quot;כ הזמנות</span>
           </div>
           <p className="text-3xl font-bold text-gray-900 mb-1">{stats.totalBookings}</p>
           <div className="flex items-center gap-1 text-xs text-green-600">
