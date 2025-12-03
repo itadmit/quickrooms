@@ -625,7 +625,7 @@ export default function BookingModal({
                 {/* Quick Date Picker - Scrollable */}
                 <div className="mb-4">
                   <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                    {Array.from({ length: 7 }, (_, i) => {
+                    {Array.from({ length: 8 }, (_, i) => {
                       const date = new Date();
                       date.setDate(date.getDate() + i);
                       const isSelected = format(date, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd");
