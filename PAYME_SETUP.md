@@ -32,8 +32,11 @@ NEXT_PUBLIC_APP_URL="http://localhost:3010"  # כתובת האפליקציה ש�
 3. העתק את ה-**Secret Key** שניתן לך
 
 ### 4. NEXT_PUBLIC_APP_URL
-- לפיתוח מקומי: `http://localhost:3010`
+- **חשוב**: PayMe לא תומך ב-localhost URLs!
+- לפיתוח מקומי: השתמש ב-ngrok או כלי tunnel אחר (למשל: `https://your-domain.ngrok.io`)
 - לפרודקשן: `https://your-domain.com`
+
+**הערה**: אם אתה מפתח מקומית, תצטרך להשתמש ב-ngrok או כלי דומה כדי לחשוף את השרת המקומי ל-URL חיצוני. PayMe דורש URLs ציבוריים עבור callback ו-return URLs.
 
 ## URLs חשובים
 

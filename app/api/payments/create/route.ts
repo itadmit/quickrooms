@@ -67,6 +67,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'הגדרות תשלום לא הושלמו. אנא פנה למנהל המערכת' }, { status: 400 });
     }
 
+    // בדיקה ש-URLs לא localhost (PayMe לא מקבל localhost URLs)
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || '';
+    if (appUrl.includes('localhost') || appUrl.includes('127.0.0.1')) {
+      return NextResponse.json(
+        { 
+          error: 'PayMe לא תומך ב-localhost URLs. אנא השתמש ב-ngrok או הגדר NEXT_PUBLIC_APP_URL ל-URL חיצוני (למשל: https://your-domain.ngrok.io)',
+          details: 'PayMe requires public URLs for callback and return URLs. Localhost URLs are not accepted.'
+        },
+        { status: 400 }
+      );
+    }
+
     // הכן את הנתונים ל-PayMe
     const paymeData = {
       seller_payme_id: owner.paymeSellerId,
@@ -74,8 +86,8 @@ export async function POST(request: NextRequest) {
       currency: 'ILS',
       product_name: `הזמנת ${room.name} ב-${room.space.name}`,
       transaction_id: `pending-${user.id}-${Date.now()}`, // ID זמני עד יצירת ההזמנה
-      sale_callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/payments/webhook`,
-      sale_return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/member/bookings?payment=success&roomId=${roomId}`,
+      sale_callback_url: `${appUrl}/api/payments/webhook`,
+      sale_return_url: `${appUrl}/dashboard/member/bookings?payment=success&roomId=${roomId}`,
       sale_email: member.email,
       sale_name: member.name,
       sale_mobile: member.phone || '',
