@@ -6,30 +6,42 @@
 
 ```env
 # PayMe (QuickPayment) Configuration
-# קבל את הערכים האלה מדשבורד PayMe שלך
-PAYME_SELLER_ID="MPL########-########-########-########"  # ה-Seller ID שלך מ-PayMe
-PAYME_ENVIRONMENT="sandbox"  # השתמש ב-"sandbox" לבדיקות, "production" לפרודקשן
-PAYME_WEBHOOK_SECRET="your-webhook-secret-here"  # למען אימות webhooks
-
-# Application URLs
-NEXT_PUBLIC_APP_URL="http://localhost:3010"  # כתובת האפליקציה שלך (לצורך callbacks)
+# הערכים שלך מ-PayMe:
+NEXT_PUBLIC_APP_URL="https://your-domain.com"  # כתובת האפליקציה שלך (לא localhost!)
 ```
 
-## איך להשיג את הערכים?
+**חשוב**: הפרטים של PayMe מוזנים דרך דף ההגדרות של Owner במערכת, לא דרך `.env`!
 
-### 1. PAYME_SELLER_ID
+## הגדרת PayMe במערכת
+
+1. התחבר למערכת כ-Owner
+2. לך ל-**הגדרות** → **הגדרות תשלום**
+3. הזן את הפרטים הבאים:
+
+### פרטי PayMe שלך:
+- **Seller PayMe ID (MPL)**: `MPL17647-88080YHW-UH8TS65W-INZDMDKP`
+- **Seller PayMe Secret**: `6cVTwgpjCMU6CFmyEJE0k3izN9C9tQ` (מוזן ב-Webhook Secret)
+- **Public Key UUID**: `1b197b90-bde2-47b9-ac6a-e60db781310e` (לא נדרש כרגע, רק ל-Client-side integration)
+
+### הגדרות:
+- **סביבה**: בחר `sandbox` לבדיקות או `production` לפרודקשן
+- **Webhook Secret**: הזן את ה-Seller PayMe Secret: `6cVTwgpjCMU6CFmyEJE0k3izN9C9tQ`
+- **הפעל תשלומים**: סמן את התיבה כדי להפעיל תשלומים
+
+## איך להשיג את הערכים? (למקרה שצריך)
+
+### 1. Seller PayMe ID (MPL)
 1. התחבר ל-[PayMe Dashboard](https://dashboard.payme.io)
 2. לך ל-**Settings** → **API Keys**
 3. העתק את ה-**Seller ID**
 
-### 2. PAYME_ENVIRONMENT
-- לסביבת פיתוח/בדיקות: `sandbox`
-- לפרודקשן: `production`
+### 2. Seller PayMe Secret
+- זה ה-Secret Key שנתן לך PayMe
+- מוזן ב-**Webhook Secret** בהגדרות המערכת
 
-### 3. PAYME_WEBHOOK_SECRET
-1. ב-PayMe Dashboard, לך ל-**Settings** → **Webhooks**
-2. הגדר webhook URL: `https://your-domain.com/api/payments/webhook`
-3. העתק את ה-**Secret Key** שניתן לך
+### 3. Public Key UUID
+- משמש ל-Client-side integration (Hosted Fields)
+- לא נדרש כרגע ל-Server-side API
 
 ### 4. NEXT_PUBLIC_APP_URL
 - **חשוב**: PayMe לא תומך ב-localhost URLs!
