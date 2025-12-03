@@ -4,17 +4,22 @@ import { rateLimit, getRateLimitIdentifier } from './lib/rate-limit';
 
 // Rate limit configuration per endpoint
 const rateLimitConfig: Record<string, { interval: number; limit: number }> = {
-  '/api/auth/login': { interval: 60, limit: 5 }, // 5 attempts per minute
-  '/api/auth/register': { interval: 60, limit: 3 }, // 3 attempts per minute
-  '/api/bookings': { interval: 60, limit: 20 }, // 20 requests per minute
-  '/api/rooms': { interval: 60, limit: 30 }, // 30 requests per minute
-  '/api/spaces': { interval: 60, limit: 30 }, // 30 requests per minute
-  '/api/upload': { interval: 60, limit: 10 }, // 10 uploads per minute
-  '/api/payments/create': { interval: 60, limit: 10 }, // 10 payment attempts per minute
-  default: { interval: 60, limit: 100 }, // 100 requests per minute for other endpoints
+  '/api/auth/login': { interval: 60, limit: 20 }, // 20 attempts per minute
+  '/api/auth/register': { interval: 60, limit: 10 }, // 10 attempts per minute
+  '/api/bookings': { interval: 60, limit: 100 }, // 100 requests per minute
+  '/api/rooms': { interval: 60, limit: 200 }, // 200 requests per minute
+  '/api/spaces': { interval: 60, limit: 200 }, // 200 requests per minute
+  '/api/upload': { interval: 60, limit: 30 }, // 30 uploads per minute
+  '/api/payments/create': { interval: 60, limit: 30 }, // 30 payment attempts per minute
+  default: { interval: 60, limit: 500 }, // 500 requests per minute for other endpoints
 };
 
 export function rateLimitMiddleware(request: NextRequest) {
+  // Skip rate limiting in development
+  if (process.env.NODE_ENV === 'development') {
+    return null;
+  }
+  
   const pathname = request.nextUrl.pathname;
   
   // Find matching rate limit config
