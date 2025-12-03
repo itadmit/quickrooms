@@ -218,6 +218,7 @@ async function main() {
     data: {
       name: 'דניאל כהן',
       email: 'daniel@example.com',
+      phone: '050-1234567',
       username: 'daniel',
       password: hashedPassword,
       phone: '050-1234567',
@@ -233,6 +234,7 @@ async function main() {
     data: {
       name: 'שרה לוי',
       email: 'sara@example.com',
+      phone: '052-9876543',
       username: 'sara',
       password: hashedPassword,
       phone: '052-9876543',
@@ -248,6 +250,7 @@ async function main() {
     data: {
       name: 'יוסי מזרחי',
       email: 'yossi@example.com',
+      phone: '054-5551234',
       username: 'yossi',
       password: hashedPassword,
       phone: '054-5551234',
