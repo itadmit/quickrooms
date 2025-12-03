@@ -92,7 +92,18 @@ export default function MemberLayout({
         </div>
 
         {/* Footer Actions */}
-        <div className="p-4 border-t border-gray-100">
+        <div className="p-4 border-t border-gray-100 space-y-1">
+          <Link
+            href="/dashboard/member/settings"
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+              pathname.startsWith('/dashboard/member/settings')
+                ? 'bg-indigo-50 text-indigo-700'
+                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+            }`}
+          >
+            <Settings className="w-5 h-5" />
+            הגדרות
+          </Link>
           <Link
             href="/api/auth/logout"
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600 transition-all"
