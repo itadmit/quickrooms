@@ -14,6 +14,9 @@ import {
   AlertCircle
 } from "lucide-react";
 import BookingModal from "@/components/BookingModal";
+import BookingCard from "@/components/BookingCard";
+import RatingModal from "@/components/RatingModal";
+import AdvancedSearch from "@/components/AdvancedSearch";
 
 interface Booking {
   id: string;
