@@ -1,0 +1,173 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// SQLite doesn't support enums, so we use String
+// UserRole: OWNER, MEMBER, GUEST
+// PaymentStatus: PENDING, COMPLETED, FAILED, REFUNDED
+
+model Owner {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  password      String
+  name          String
+  spaceName     String
+  plan          String?  // מסלול
+  phone         String?  // טלפון
+  address       String?  // כתובת
+  allowOveruse  Boolean  @default(false) // האם לאפשר חריגת קרדיט
+  // Payment Settings
+  paymeSellerId String?  // PayMe Seller ID
+  paymeEnvironment String? @default("sandbox") // sandbox או production
+  paymeWebhookSecret String? // Webhook secret לאימות
+  paymentEnabled Boolean @default(false) // האם תשלומים מופעלים
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  spaces        Space[]
+  bookings      Booking[]
+  members       Member[]
+  transactions  Transaction[]
+  creditPlans   MemberCreditPlan[]
+  pendingPayments PendingPayment[]
+}
+
+model Space {
+  id          String   @id @default(cuid())
+  name        String
+  address     String
+  logo        String?
+  ownerId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  owner       Owner          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  meetingRooms MeetingRoom[]
+}
+
+model MeetingRoom {
+  id                String   @id @default(cuid())
+  name              String
+  capacity          Int
+  images            String   // Comma separated URLs (SQLite limitation)
+  creditsPerHour    Int      // קרדיטים לשעה
+  pricePerHour      Float    // מחיר לשעה לאורח (USD)
+  operatingHours    String?  // JSON string (SQLite limitation)
+  minDurationMinutes Int     @default(60) // מינימום זמן לפגישה (בדקות)
+  timeIntervalMinutes Int    @default(30) // קפיצות זמן (בדקות: 15, 30, 60)
+  amenities         String?  // JSON string - רשימת אמניטיז (WiFi, TV, WhiteBoard, Coffee, etc.)
+  specialInstructions String? // הנחיות מיוחדות מהמנהל
+  description       String?  // תיאור החדר
+  floor            String?  // קומה
+  spaceId           String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  space             Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  bookings          Booking[]
+  pendingPayments   PendingPayment[]
+}
+
+model Member {
+  id                String   @id @default(cuid())
+  name              String
+  email             String   @unique
+  username          String   @unique
+  password          String
+  phone             String?  // מספר טלפון
+  creditBalance     Int      @default(0)
+  creditPlanId      String?
+  ownerId           String
+  allowOveruse      Boolean  @default(false) // האם לאפשר חריגה
+  lastCreditReset   DateTime @default(now())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  owner             Owner            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  creditPlan        MemberCreditPlan? @relation(fields: [creditPlanId], references: [id])
+  bookings          Booking[]
+  transactions      Transaction[]
+  pendingPayments   PendingPayment[]
+}
+
+model MemberCreditPlan {
+  id          String   @id @default(cuid())
+  name        String
+  credits     Int      // כמות קרדיט חודשית
+  ownerId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  owner       Owner    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  members     Member[]
+}
+
+model Booking {
+  id              String        @id @default(cuid())
+  roomId          String
+  ownerId         String
+  memberId        String?
+  guestEmail      String?
+  guestName       String?
+  startTime       DateTime
+  endTime         DateTime
+  hours           Int
+  creditsUsed     Int?
+  priceCharged    Float?
+  paymentStatus   String        @default("PENDING") // SQLite limitation (Enum -> String)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  room            MeetingRoom   @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  owner           Owner         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  member          Member?       @relation(fields: [memberId], references: [id], onDelete: SetNull)
+  transactions    Transaction[]
+}
+
+model Transaction {
+  id              String        @id @default(cuid())
+  bookingId       String?
+  ownerId         String
+  memberId        String?
+  guestEmail      String?
+  amount          Float
+  currency        String        @default("USD")
+  paymentStatus   String        // SQLite limitation (Enum -> String)
+  paypalId        String?
+  paypalData      String?       // JSON string (SQLite limitation)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  owner           Owner         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  booking         Booking?      @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  member          Member?       @relation(fields: [memberId], references: [id], onDelete: SetNull)
+}
+
+model PendingPayment {
+  id              String        @id @default(cuid())
+  transactionId  String        @unique // PayMe transaction_id
+  paymeSaleId     String?       // PayMe sale ID
+  memberId        String
+  roomId          String
+  ownerId         String
+  bookingData     String        // JSON string with startTime, endTime
+  amount          Float
+  currency        String        @default("ILS")
+  paymentStatus   String        @default("PENDING")
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  expiresAt       DateTime      // תפוגה אחרי זמן מסוים
+  
+  member          Member        @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  room            MeetingRoom   @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  owner           Owner         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+}
+
