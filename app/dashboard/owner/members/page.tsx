@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Users as UsersIcon, CreditCard, Mail, User, Shield, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Plus, Users as UsersIcon, CreditCard, Mail, User, Shield, X, ChevronLeft } from "lucide-react";
 
 interface Member {
   id: string;
@@ -23,6 +24,7 @@ interface CreditPlan {
 }
 
 export default function MembersPage() {
+  const router = useRouter();
   const [members, setMembers] = useState<Member[]>([]);
   const [creditPlans, setCreditPlans] = useState<CreditPlan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -340,10 +342,14 @@ export default function MembersPage() {
               </thead>
               <tbody className="divide-y divide-gray-50 text-sm">
                 {members.map((member) => (
-                  <tr key={member.id} className="hover:bg-gray-50/80 transition-colors group">
+                  <tr 
+                    key={member.id} 
+                    onClick={() => router.push(`/dashboard/owner/members/${member.id}`)}
+                    className="hover:bg-indigo-50/50 transition-colors group cursor-pointer"
+                  >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-xs border border-indigo-100">
+                        <div className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-xs border border-indigo-100 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
                           {member.name.charAt(0)}
                         </div>
                         <span className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
@@ -364,14 +370,17 @@ export default function MembersPage() {
                         : "ללא"}
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
-                        member.allowOveruse 
-                          ? "bg-green-50 text-green-700 border-green-100" 
-                          : "bg-gray-50 text-gray-600 border-gray-100"
-                      }`}>
-                        <Shield className="w-3 h-3" />
-                        {member.allowOveruse ? "כן" : "לא"}
-                      </span>
+                      <div className="flex items-center justify-between">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
+                          member.allowOveruse 
+                            ? "bg-green-50 text-green-700 border-green-100" 
+                            : "bg-gray-50 text-gray-600 border-gray-100"
+                        }`}>
+                          <Shield className="w-3 h-3" />
+                          {member.allowOveruse ? "כן" : "לא"}
+                        </span>
+                        <ChevronLeft className="w-5 h-5 text-gray-400 group-hover:text-indigo-600 transition-colors" />
+                      </div>
                     </td>
                   </tr>
                 ))}

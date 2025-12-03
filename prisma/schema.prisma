@@ -103,6 +103,7 @@ model Member {
   bookings          Booking[]
   transactions      Transaction[]
   pendingPayments   PendingPayment[]
+  notes             MemberNote[]
 }
 
 model MemberCreditPlan {
@@ -193,6 +194,20 @@ model Notification {
   
   @@index([userId, userRole])
   @@index([read])
+  @@index([createdAt])
+}
+
+model MemberNote {
+  id        String   @id @default(cuid())
+  memberId  String
+  content   String   // תוכן ההערה
+  createdBy String   // Owner ID שיצר את ההערה
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  
+  @@index([memberId])
   @@index([createdAt])
 }
 
