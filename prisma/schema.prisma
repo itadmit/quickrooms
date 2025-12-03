@@ -45,6 +45,12 @@ model Owner {
   transactions  Transaction[]
   creditPlans   MemberCreditPlan[]
   pendingPayments PendingPayment[]
+  brandingSettings BrandingSettings?
+  invoiceTemplates InvoiceTemplate[]
+  automationRules AutomationRule[]
+  webhooks      Webhook[]
+  auditLogs     AuditLog[]
+  quotes        Quote[]
 }
 
 model Space {
@@ -81,6 +87,9 @@ model MeetingRoom {
   space             Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   bookings          Booking[]
   pendingPayments   PendingPayment[]
+  waitlistEntries   WaitlistEntry[]
+  ratings           RoomRating[]
+  quotes            Quote[]
 }
 
 model Member {
@@ -104,6 +113,9 @@ model Member {
   transactions      Transaction[]
   pendingPayments   PendingPayment[]
   notes             MemberNote[]
+  waitlistEntries   WaitlistEntry[]
+  ratings           RoomRating[]
+  quotes            Quote[]
 }
 
 model MemberCreditPlan {
@@ -131,6 +143,15 @@ model Booking {
   creditsUsed     Int?
   priceCharged    Float?
   paymentStatus   String        @default("PENDING") // SQLite limitation (Enum -> String)
+  // Recurring Booking
+  recurringBookingId String?     // ID של ההזמנה החוזרת הראשית
+  isRecurring     Boolean        @default(false)
+  recurringPattern String?       // JSON: {type: "weekly"/"monthly", days: [1,3,5], endDate: Date}
+  // Check-in/Check-out
+  checkedIn       Boolean        @default(false)
+  checkedInAt     DateTime?
+  checkedOut      Boolean        @default(false)
+  checkedOutAt     DateTime?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
   
@@ -138,6 +159,12 @@ model Booking {
   owner           Owner         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   member          Member?       @relation(fields: [memberId], references: [id], onDelete: SetNull)
   transactions    Transaction[]
+  waitlistEntries WaitlistEntry[]
+  qrCode          BookingQRCode?
+  recurringInstances Booking[]  @relation("RecurringBooking")
+  parentRecurring Booking?      @relation("RecurringBooking", fields: [recurringBookingId], references: [id])
+  rating            RoomRating?
+  quote             Quote?
 }
 
 model Transaction {
@@ -209,5 +236,181 @@ model MemberNote {
   
   @@index([memberId])
   @@index([createdAt])
+}
+
+// Waitlist - רשימת המתנה
+model WaitlistEntry {
+  id        String   @id @default(cuid())
+  roomId    String
+  memberId  String?
+  guestEmail String?
+  guestName String?
+  ownerId   String
+  preferredDate DateTime
+  preferredStartTime String?  // "HH:mm"
+  preferredEndTime String?    // "HH:mm"
+  notified  Boolean  @default(false)
+  notifiedAt DateTime?
+  createdAt DateTime @default(now())
+  
+  room      MeetingRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  member    Member?     @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  booking   Booking?    @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  bookingId String?
+  
+  @@index([roomId])
+  @@index([preferredDate])
+  @@index([notified])
+}
+
+// QR Code for Bookings
+model BookingQRCode {
+  id        String   @id @default(cuid())
+  bookingId String   @unique
+  qrCode    String   // Base64 או URL ל-QR code
+  token     String   @unique // Token לאימות
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+  
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  @@index([token])
+}
+
+// Audit Log - לוג כל הפעולות
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String   // מי ביצע את הפעולה
+  userRole  String   // OWNER, MEMBER, etc.
+  action    String   // CREATE, UPDATE, DELETE, LOGIN, etc.
+  entityType String  // Booking, Member, Room, etc.
+  entityId  String?  // ID של הישות
+  details   String?  // JSON עם פרטים נוספים
+  ipAddress String?
+  userAgent String?
+  ownerId   String?  // אם הפעולה קשורה ל-Owner מסוים
+  createdAt DateTime @default(now())
+  
+  owner     Owner?   @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@index([action])
+  @@index([ownerId])
+}
+
+// Room Rating - דירוג חדרים
+model RoomRating {
+  id        String   @id @default(cuid())
+  roomId    String
+  bookingId String   @unique
+  memberId  String?
+  rating    Int      // 1-5
+  review    String? // ביקורת כתובה
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  room      MeetingRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  booking   Booking     @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  member    Member?     @relation(fields: [memberId], references: [id], onDelete: SetNull)
+  
+  @@index([roomId])
+  @@index([rating])
+}
+
+// Branding Settings - התאמה אישית
+model BrandingSettings {
+  id        String   @id @default(cuid())
+  ownerId   String   @unique
+  logoUrl   String?
+  primaryColor String? // Hex color
+  secondaryColor String? // Hex color
+  companyName String? // שם מותאם במקום "Quick Rooms"
+  customDomain String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  owner     Owner    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+}
+
+// Invoice Template - תבנית חשבונית
+model InvoiceTemplate {
+  id        String   @id @default(cuid())
+  ownerId   String
+  name      String
+  template  String   // HTML template
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  owner     Owner    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  
+  @@index([ownerId])
+}
+
+// Quote - הצעת מחיר
+model Quote {
+  id        String   @id @default(cuid())
+  ownerId   String
+  memberId  String?
+  guestEmail String?
+  guestName String?
+  roomId    String
+  startTime DateTime
+  endTime   DateTime
+  hours     Int
+  creditsRequired Int?
+  price     Float?
+  status    String   @default("PENDING") // PENDING, ACCEPTED, REJECTED, EXPIRED
+  expiresAt DateTime
+  convertedToBookingId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  owner     Owner         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  member    Member?       @relation(fields: [memberId], references: [id], onDelete: SetNull)
+  room      MeetingRoom   @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  booking   Booking?      @relation(fields: [convertedToBookingId], references: [id], onDelete: SetNull)
+  
+  @@unique([convertedToBookingId])
+  @@index([ownerId])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+// Automation Rule - כללי אוטומציה
+model AutomationRule {
+  id        String   @id @default(cuid())
+  ownerId   String
+  name      String
+  trigger   String   // EVENT, SCHEDULE, CONDITION
+  conditions String? // JSON עם תנאים
+  actions   String   // JSON עם פעולות לביצוע
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  owner     Owner    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  
+  @@index([ownerId])
+  @@index([enabled])
+}
+
+// Webhook - Webhooks לאירועים
+model Webhook {
+  id        String   @id @default(cuid())
+  ownerId   String
+  url       String
+  events    String   // JSON array של אירועים
+  secret    String   // Secret לאימות
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  owner     Owner    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  
+  @@index([ownerId])
+  @@index([enabled])
 }
 
