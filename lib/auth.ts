@@ -21,7 +21,7 @@ export async function verifyPassword(password: string, hashedPassword: string): 
 }
 
 export async function generateToken(user: AuthUser): Promise<string> {
-  return await new SignJWT({ id: user.id, email: user.email, role: user.role })
+  return await new SignJWT({ id: user.id, email: user.email, role: user.role, name: user.name })
     .setProtectedHeader({ alg: 'HS256' })
     .setExpirationTime('7d')
     .sign(secret);
@@ -30,7 +30,15 @@ export async function generateToken(user: AuthUser): Promise<string> {
 export async function verifyToken(token: string): Promise<AuthUser | null> {
   try {
     const { payload } = await jwtVerify(token, secret);
-    return payload as AuthUser;
+    if (payload && typeof payload === 'object' && 'id' in payload && 'email' in payload && 'role' in payload && 'name' in payload) {
+      return {
+        id: payload.id as string,
+        email: payload.email as string,
+        role: payload.role as 'OWNER' | 'MEMBER',
+        name: payload.name as string,
+      };
+    }
+    return null;
   } catch (error) {
     console.error('[verifyToken] Error:', error instanceof Error ? error.message : error);
     return null;

@@ -108,9 +108,9 @@ export default function BookingModal({
     }
 
     const start = new Date(selectedDate);
-    start.setHours(startHour, startMinute, 0, 0);
+    start.setHours(startHour!, startMinute, 0, 0);
     const end = new Date(selectedDate);
-    end.setHours(endHour, endMinute, 0, 0);
+    end.setHours(endHour!, endMinute, 0, 0);
     
     const durationMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
     if (durationMinutes < minDuration) return { credits: 0, price: 0, hours: 0, minutes: 0 };
@@ -142,6 +142,7 @@ export default function BookingModal({
   };
 
   const handleSubmit = () => {
+    if (startHour === null || endHour === null) return;
     const start = new Date(selectedDate);
     start.setHours(startHour, startMinute, 0, 0);
     const end = new Date(selectedDate);
@@ -244,6 +245,7 @@ export default function BookingModal({
 
   // Check if current selection overlaps with existing bookings
   const isCurrentSelectionAvailable = () => {
+    if (startHour === null || endHour === null) return true;
     const start = new Date(selectedDate);
     start.setHours(startHour, startMinute, 0, 0);
     const end = new Date(selectedDate);
@@ -261,6 +263,7 @@ export default function BookingModal({
   };
 
   const handleConfirm = async () => {
+    if (startHour === null || endHour === null) return;
     const start = new Date(selectedDate);
     start.setHours(startHour, startMinute, 0, 0);
     const end = new Date(selectedDate);
@@ -725,7 +728,12 @@ export default function BookingModal({
                     const isToday = isSameDay(selectedDate, now);
                     const isPast = isToday && slotTime < now;
                     
-                    const isDisabled = isPast || (endHour !== null && slotTime >= new Date(selectedDate).setHours(endHour, endMinute, 0, 0));
+                    const endTimeForCheck = endHour !== null ? (() => {
+                      const dt = new Date(selectedDate);
+                      dt.setHours(endHour, endMinute, 0, 0);
+                      return dt;
+                    })() : null;
+                    const isDisabled = isPast || (endTimeForCheck !== null && slotTime >= endTimeForCheck);
                     return (
                       <option
                         key={idx}
@@ -786,11 +794,14 @@ export default function BookingModal({
                   const now = new Date();
                   const isPast = slotTime < now;
                   const isAvailable = !isPast && isTimeSlotAvailable(slot.hour, slot.minute);
-                  const startTime = new Date(selectedDate);
-                  startTime.setHours(startHour, startMinute, 0, 0);
-                  const endTime = new Date(selectedDate);
-                  endTime.setHours(endHour, endMinute, 0, 0);
-                  const isSelected = slotTime >= startTime && slotTime < endTime;
+                  let isSelected = false;
+                  if (startHour !== null && endHour !== null) {
+                    const startTime = new Date(selectedDate);
+                    startTime.setHours(startHour, startMinute, 0, 0);
+                    const endTime = new Date(selectedDate);
+                    endTime.setHours(endHour, endMinute, 0, 0);
+                    isSelected = slotTime >= startTime && slotTime < endTime;
+                  }
                   return (
                     <button
                       key={idx}
@@ -939,7 +950,7 @@ export default function BookingModal({
                     <div className="text-right">
                       <p className="text-sm text-gray-500 mb-1">בין השעות</p>
                       <p className="text-base font-medium text-gray-900">
-                        {startHour.toString().padStart(2, "0")}:{startMinute.toString().padStart(2, "0")} - {endHour.toString().padStart(2, "0")}:{endMinute.toString().padStart(2, "0")}
+                        {startHour !== null && endHour !== null ? `${startHour.toString().padStart(2, "0")}:${startMinute.toString().padStart(2, "0")} - ${endHour.toString().padStart(2, "0")}:${endMinute.toString().padStart(2, "0")}` : '-'}
                       </p>
                     </div>
                   </div>
@@ -1077,7 +1088,7 @@ export default function BookingModal({
                       <div className="flex-1">
                         <p className="text-xs text-gray-500 mb-1">שעה</p>
                         <p className="text-sm font-medium text-gray-900">
-                          {startHour.toString().padStart(2, "0")}:{startMinute.toString().padStart(2, "0")} - {endHour.toString().padStart(2, "0")}:{endMinute.toString().padStart(2, "0")}
+                          {startHour !== null && endHour !== null ? `${startHour.toString().padStart(2, "0")}:${startMinute.toString().padStart(2, "0")} - ${endHour.toString().padStart(2, "0")}:${endMinute.toString().padStart(2, "0")}` : '-'}
                         </p>
                       </div>
                     </div>

@@ -30,7 +30,6 @@ export async function GET(request: NextRequest) {
       name: member.name || '',
       email: member.email || '',
       phone: member.phone || '',
-      address: member.address || '',
       notifyBookingConfirmed: true,
       notifyBookingReminder: true,
       reminderMinutes: 30,
@@ -68,7 +67,6 @@ export async function PUT(request: NextRequest) {
       name,
       email,
       phone,
-      address,
       currentPassword,
       newPassword,
     } = body;
@@ -109,7 +107,6 @@ export async function PUT(request: NextRequest) {
           name,
           email,
           phone,
-          address,
           password: hashedPassword,
         },
       });
@@ -121,7 +118,6 @@ export async function PUT(request: NextRequest) {
           name,
           email,
           phone,
-          address,
         },
       });
     }

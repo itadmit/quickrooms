@@ -48,9 +48,9 @@ export async function POST(request: NextRequest) {
     const baseBooking = {
       roomId,
       ownerId: room.space.ownerId,
-      memberId: user.role === 'MEMBER' ? user.id : null,
-      guestEmail: user.role === 'MEMBER' ? null : user.email,
-      guestName: user.role === 'MEMBER' ? null : user.name,
+      memberId: user.role === 'MEMBER' ? user.id : undefined,
+      guestEmail: user.role === 'MEMBER' ? undefined : user.email,
+      guestName: user.role === 'MEMBER' ? undefined : user.name,
       startTime: new Date(startTime),
       endTime: new Date(endTime),
       hours,

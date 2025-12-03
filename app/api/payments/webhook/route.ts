@@ -101,13 +101,11 @@ export async function POST(request: NextRequest) {
       await prisma.transaction.create({
         data: {
           bookingId: booking.id,
-          type: 'OVERUSE',
           amount: price / 100, // המרה מאגורות לשקלים
           currency: currency || 'ILS',
           paymentStatus: 'COMPLETED',
           ownerId: pendingPayment.ownerId,
           memberId: pendingPayment.memberId,
-          description: `תשלום עבור הזמנה ${booking.id}`,
         },
       });
 

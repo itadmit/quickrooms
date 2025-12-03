@@ -136,7 +136,7 @@ export default function OwnerDashboard() {
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${stat.bg} ${stat.color}`}>
                 <stat.icon className="w-5 h-5" />
               </div>
-              {stat.change !== null && (
+              {stat.change !== null && stat.change !== undefined && (
                 <span className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${
                   stat.change >= 0 ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"
                 }`}>

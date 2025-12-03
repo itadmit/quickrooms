@@ -35,6 +35,7 @@ export default function BookingPage() {
     if (roomId) {
       fetchRoom();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomId]);
 
   const fetchRoom = async () => {
