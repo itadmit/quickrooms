@@ -46,6 +46,29 @@ export async function PUT(
       );
     }
 
+    // בדיקה אם email או username כבר קיימים אצל חבר אחר
+    if (email !== undefined || username !== undefined) {
+      const orConditions: any[] = [];
+      if (email !== undefined) orConditions.push({ email });
+      if (username !== undefined) orConditions.push({ username });
+
+      const existingMember = await prisma.member.findFirst({
+        where: {
+          AND: [
+            { id: { not: memberId } },
+            { OR: orConditions },
+          ],
+        },
+      });
+
+      if (existingMember) {
+        return NextResponse.json(
+          { error: 'אימייל או username כבר קיימים אצל חבר אחר' },
+          { status: 409 }
+        );
+      }
+    }
+
     const updateData: any = {};
     if (name !== undefined) updateData.name = name;
     if (email !== undefined) updateData.email = email;

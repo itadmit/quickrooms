@@ -1,8 +1,17 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyToken } from '@/lib/auth';
+import { rateLimitMiddleware } from './middleware-rate-limit';
 
 export async function middleware(request: NextRequest) {
+  // Apply rate limiting to API routes
+  if (request.nextUrl.pathname.startsWith('/api')) {
+    const rateLimitResponse = rateLimitMiddleware(request);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+  }
+
   const token = request.cookies.get('auth-token')?.value;
 
   console.log('[Middleware]', request.nextUrl.pathname, 'Token present:', !!token);
@@ -39,6 +48,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*'],
+  matcher: ['/dashboard/:path*', '/api/:path*'],
 };
 

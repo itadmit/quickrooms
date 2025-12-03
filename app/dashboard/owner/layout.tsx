@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Logo from "@/components/Logo";
+import Notifications from "@/components/Notifications";
 import { 
   LayoutDashboard, 
   Building2, 
@@ -14,7 +15,6 @@ import {
   AlertCircle, 
   LogOut, 
   Menu,
-  Bell,
   Search,
   ChevronDown,
   User,
@@ -124,10 +124,7 @@ export default function OwnerLayout({
 
           {/* Right Side: Actions & Profile */}
           <div className="flex items-center gap-3 lg:gap-6">
-            <button className="relative p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-            </button>
+            <Notifications />
             
             <div className="h-8 w-px bg-gray-200 hidden lg:block"></div>
 

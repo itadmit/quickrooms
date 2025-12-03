@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { resetMonthlyCredits } from '@/lib/credit-reset';
+import { sendBookingReminders, checkLowCredits } from '@/lib/notifications';
 
 /**
- * Cron Job לאיפוס קרדיטים חודשי
- * מופעל פעם ביום (Vercel Cron)
+ * Cron Job לשליחת תזכורות
+ * מופעל כל 30 דקות (Vercel Cron)
  */
 export async function GET(request: NextRequest) {
   try {
-    // בדיקת Cron (Vercel שולח header זה)
+    // בדיקת Vercel Cron (Vercel שולח header זה)
     const vercelCron = request.headers.get('x-vercel-cron');
     const authHeader = request.headers.get('authorization');
     const cronSecret = process.env.CRON_SECRET || process.env.CRON_API_KEY;
@@ -20,19 +20,27 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const result = await resetMonthlyCredits();
+    // שליחת תזכורות להזמנות
+    const remindersResult = await sendBookingReminders();
+    
+    // בדיקת קרדיטים נמוכים
+    const lowCreditsResult = await checkLowCredits();
 
     return NextResponse.json({
       success: true,
-      message: `אופסו קרדיטים ל-${result.membersReset} Members`,
-      membersReset: result.membersReset,
+      reminders: {
+        sent: remindersResult.remindersSent || 0,
+      },
+      lowCredits: {
+        notificationsSent: lowCreditsResult.notificationsSent || 0,
+      },
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('Error in reset credits cron:', error);
+    console.error('Error in send reminders cron:', error);
     return NextResponse.json(
       { 
-        error: 'שגיאה באיפוס קרדיטים',
+        error: 'שגיאה בשליחת תזכורות',
         details: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }

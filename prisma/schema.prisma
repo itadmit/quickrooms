@@ -29,6 +29,13 @@ model Owner {
   paymeEnvironment String? @default("sandbox") // sandbox או production
   paymeWebhookSecret String? // Webhook secret לאימות
   paymentEnabled Boolean @default(false) // האם תשלומים מופעלים
+  // Email Settings (SMTP)
+  smtpHost String? // SMTP Host (default: smtp.gmail.com)
+  smtpPort Int? // SMTP Port (default: 587)
+  smtpSecure Boolean @default(false) // Use SSL/TLS
+  smtpUser String? // SMTP Username (email)
+  smtpPass String? // SMTP Password (App Password)
+  emailEnabled Boolean @default(false) // האם אימיילים מופעלים
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   
@@ -169,5 +176,23 @@ model PendingPayment {
   member          Member        @relation(fields: [memberId], references: [id], onDelete: Cascade)
   room            MeetingRoom   @relation(fields: [roomId], references: [id], onDelete: Cascade)
   owner           Owner         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id              String        @id @default(cuid())
+  userId          String        // ID של Owner או Member
+  userRole        String        // OWNER או MEMBER
+  type            String        // BOOKING_REMINDER, BOOKING_CONFIRMED, LOW_CREDITS, MONTHLY_REPORT, etc.
+  title           String
+  message         String
+  link            String?       // קישור רלוונטי (למשל להזמנה)
+  read            Boolean       @default(false)
+  emailSent       Boolean       @default(false)
+  emailSentAt     DateTime?
+  createdAt       DateTime      @default(now())
+  
+  @@index([userId, userRole])
+  @@index([read])
+  @@index([createdAt])
 }
 

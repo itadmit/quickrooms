@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Building2, Clock, CreditCard, Bell, Save, Loader2, Wallet, Info } from "lucide-react";
+import { Building2, Clock, CreditCard, Bell, Save, Loader2, Wallet, Info, Mail } from "lucide-react";
 
 interface OwnerSettings {
   businessName: string;
@@ -22,6 +22,13 @@ interface OwnerSettings {
   paymeEnvironment: 'sandbox' | 'production';
   paymeWebhookSecret: string;
   paymentEnabled: boolean;
+  // Email Settings
+  smtpHost: string;
+  smtpPort: number;
+  smtpSecure: boolean;
+  smtpUser: string;
+  smtpPass: string;
+  emailEnabled: boolean;
 }
 
 export default function OwnerSettingsPage() {
@@ -43,6 +50,12 @@ export default function OwnerSettingsPage() {
     paymeEnvironment: 'sandbox',
     paymeWebhookSecret: "",
     paymentEnabled: false,
+    smtpHost: "smtp.gmail.com",
+    smtpPort: 587,
+    smtpSecure: false,
+    smtpUser: "",
+    smtpPass: "",
+    emailEnabled: false,
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -403,6 +416,133 @@ export default function OwnerSettingsPage() {
                       <li>הגדר Webhook URL: <code className="bg-blue-100 px-1 rounded">{typeof window !== 'undefined' ? window.location.origin : 'YOUR_DOMAIN'}/api/payments/webhook</code></li>
                       <li>העתק את ה-Webhook Secret שניתן לך</li>
                     </ol>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Email Settings */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-gray-100">
+          <div className="flex items-center gap-2">
+            <Mail className="w-5 h-5 text-indigo-600" />
+            <h2 className="text-lg font-bold text-gray-900">הגדרות אימייל (SMTP)</h2>
+          </div>
+        </div>
+        <div className="p-6 space-y-4">
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div>
+              <div className="text-sm font-medium text-gray-900">הפעל שליחת אימיילים</div>
+              <div className="text-xs text-gray-500 mt-1">שלח אימיילים אוטומטיים ל-Members (תזכורות, אישורים וכו')</div>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={settings.emailEnabled}
+                onChange={(e) => setSettings({ ...settings, emailEnabled: e.target.checked })}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+            </label>
+          </div>
+
+          {settings.emailEnabled && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  SMTP Host
+                  <span className="text-red-500 mr-1">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={settings.smtpHost}
+                  onChange={(e) => setSettings({ ...settings, smtpHost: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  placeholder="smtp.gmail.com"
+                />
+                <p className="text-xs text-gray-500 mt-1">שרת SMTP (למשל: smtp.gmail.com)</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    SMTP Port
+                    <span className="text-red-500 mr-1">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    value={settings.smtpPort}
+                    onChange={(e) => setSettings({ ...settings, smtpPort: parseInt(e.target.value) || 587 })}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    placeholder="587"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">פורט SMTP (587 ל-TLS, 465 ל-SSL)</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Secure (SSL/TLS)
+                  </label>
+                  <label className="relative inline-flex items-center cursor-pointer mt-2">
+                    <input
+                      type="checkbox"
+                      checked={settings.smtpSecure}
+                      onChange={(e) => setSettings({ ...settings, smtpSecure: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                  </label>
+                  <p className="text-xs text-gray-500 mt-1">הפעל עבור פורט 465 (SSL)</p>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  SMTP Username (Email)
+                  <span className="text-red-500 mr-1">*</span>
+                </label>
+                <input
+                  type="email"
+                  value={settings.smtpUser}
+                  onChange={(e) => setSettings({ ...settings, smtpUser: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  placeholder="your-email@gmail.com"
+                />
+                <p className="text-xs text-gray-500 mt-1">כתובת האימייל שלך</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  SMTP Password (App Password)
+                  <span className="text-red-500 mr-1">*</span>
+                </label>
+                <input
+                  type="password"
+                  value={settings.smtpPass}
+                  onChange={(e) => setSettings({ ...settings, smtpPass: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  placeholder="הזן App Password"
+                />
+                <p className="text-xs text-gray-500 mt-1">App Password מ-Google (לא הסיסמה הרגילה!)</p>
+              </div>
+
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-blue-800">
+                    <p className="font-medium mb-1">הוראות הגדרת Google SMTP:</p>
+                    <ol className="list-decimal list-inside space-y-1 text-xs">
+                      <li>היכנס ל-<a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" className="underline">Google Account Security</a></li>
+                      <li>הפעל <strong>2-Step Verification</strong> (אם לא מופעל)</li>
+                      <li>לך ל-<a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="underline">App Passwords</a></li>
+                      <li>בחר "Mail" ו-"Other (Custom name)"</li>
+                      <li>הזן שם: "Quick Rooms"</li>
+                      <li>העתק את ה-App Password (16 תווים) והזן אותו למעלה</li>
+                    </ol>
+                    <p className="mt-2 text-xs font-medium">הערה: השתמש ב-App Password ולא בסיסמה הרגילה!</p>
                   </div>
                 </div>
               </div>

@@ -5,6 +5,16 @@ import { prisma } from '@/lib/prisma';
 // POST - יצירת תשלום PayPal
 export async function POST(request: NextRequest) {
   try {
+    const token = request.cookies.get('auth-token')?.value;
+    if (!token) {
+      return NextResponse.json({ error: 'לא מאומת' }, { status: 401 });
+    }
+
+    const user = await verifyToken(token);
+    if (!user) {
+      return NextResponse.json({ error: 'לא מאומת' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { bookingId, amount, currency = 'USD' } = body;
 
@@ -28,6 +38,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'הזמנה לא נמצאה' },
         { status: 404 }
+      );
+    }
+
+    // בדיקת הרשאות:
+    // - OWNER יכול ליצור תשלום עבור כל הזמנה שלו
+    // - MEMBER יכול ליצור תשלום רק עבור הזמנות שלו
+    // - Guest bookings - רק אם יש guestEmail תואם (או דרך webhook)
+    if (user.role === 'OWNER') {
+      if (booking.ownerId !== user.id) {
+        return NextResponse.json(
+          { error: 'אין הרשאה ליצור תשלום עבור הזמנה זו' },
+          { status: 403 }
+        );
+      }
+    } else if (user.role === 'MEMBER') {
+      if (!booking.memberId || booking.memberId !== user.id) {
+        return NextResponse.json(
+          { error: 'אין הרשאה ליצור תשלום עבור הזמנה זו' },
+          { status: 403 }
+        );
+      }
+    } else {
+      return NextResponse.json(
+        { error: 'גישה נדחתה' },
+        { status: 403 }
       );
     }
 

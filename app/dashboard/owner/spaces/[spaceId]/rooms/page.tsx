@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Plus, Users, CreditCard, DollarSign, Image as ImageIcon, ArrowRight, X, Wifi, Tv, Coffee, SquarePen } from "lucide-react";
+import { Plus, Users, CreditCard, DollarSign, Image as ImageIcon, ArrowRight, X, Wifi, Tv, Coffee, SquarePen, Upload, Loader2 } from "lucide-react";
 
 interface Room {
   id: string;
@@ -36,6 +36,8 @@ export default function RoomsPage() {
     specialInstructions: "",
     amenities: [] as string[],
   });
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const availableAmenities = [
     { id: "wifi", label: "Wi-Fi", icon: Wifi },
@@ -59,6 +61,58 @@ export default function RoomsPage() {
       console.error("Error fetching rooms:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('סוג קובץ לא נתמך. אנא העלה תמונה בפורמט JPG, PNG או WebP');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      alert('גודל הקובץ גדול מדי. מקסימום 5MB');
+      return;
+    }
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    // Upload file
+    setUploadingImage(true);
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadFormData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'שגיאה בהעלאת התמונה');
+      }
+
+      const { url } = await response.json();
+      setFormData({ ...formData, images: url });
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert(error instanceof Error ? error.message : 'שגיאה בהעלאת התמונה');
+      setImagePreview(null);
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -96,6 +150,7 @@ export default function RoomsPage() {
           specialInstructions: "",
           amenities: [],
         });
+        setImagePreview(null);
         fetchRooms();
       }
     } catch (error) {
@@ -214,15 +269,70 @@ export default function RoomsPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                תמונה (URL)
+                תמונה
               </label>
-              <input
-                type="url"
-                value={formData.images}
-                onChange={(e) => setFormData({ ...formData, images: e.target.value })}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
-                placeholder="https://example.com/room-image.jpg"
-              />
+              
+              {/* Image Preview */}
+              {(imagePreview || formData.images) && (
+                <div className="mb-3 relative">
+                  <img
+                    src={imagePreview || formData.images}
+                    alt="Preview"
+                    className="w-full h-48 object-cover rounded-xl border border-gray-200"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImagePreview(null);
+                      setFormData({ ...formData, images: "" });
+                    }}
+                    className="absolute top-2 left-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* Upload Button */}
+              <div className="flex gap-3">
+                <label className="flex-1 cursor-pointer">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    disabled={uploadingImage}
+                  />
+                  <div className={`flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-50 border-2 border-dashed border-indigo-300 rounded-xl hover:bg-indigo-100 transition-colors ${uploadingImage ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    {uploadingImage ? (
+                      <>
+                        <Loader2 className="w-5 h-5 text-indigo-600 animate-spin" />
+                        <span className="text-sm font-medium text-indigo-700">מעלה...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-5 h-5 text-indigo-600" />
+                        <span className="text-sm font-medium text-indigo-700">העלה תמונה</span>
+                      </>
+                    )}
+                  </div>
+                </label>
+              </div>
+
+              {/* URL Input (Alternative) */}
+              <div className="mt-3">
+                <p className="text-xs text-gray-500 mb-2">או הזן URL:</p>
+                <input
+                  type="url"
+                  value={formData.images}
+                  onChange={(e) => {
+                    setFormData({ ...formData, images: e.target.value });
+                    setImagePreview(e.target.value || null);
+                  }}
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
+                  placeholder="https://example.com/room-image.jpg"
+                />
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">

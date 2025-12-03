@@ -1,11 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { verifyToken } from "@/lib/auth";
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { bookingId: string } }
 ) {
   try {
+    const token = request.cookies.get('auth-token')?.value;
+    if (!token) {
+      return NextResponse.json({ error: 'לא מאומת' }, { status: 401 });
+    }
+
+    const user = await verifyToken(token);
+    if (!user) {
+      return NextResponse.json({ error: 'לא מאומת' }, { status: 401 });
+    }
+
     const bookingId = params.bookingId;
 
     // מציאת ההזמנה
@@ -24,6 +35,30 @@ export async function DELETE(
       );
     }
 
+    // בדיקת הרשאות:
+    // - OWNER יכול למחוק כל הזמנה שלו
+    // - MEMBER יכול למחוק רק הזמנות שלו
+    if (user.role === 'OWNER') {
+      if (booking.ownerId !== user.id) {
+        return NextResponse.json(
+          { error: 'אין הרשאה למחוק הזמנה זו' },
+          { status: 403 }
+        );
+      }
+    } else if (user.role === 'MEMBER') {
+      if (!booking.memberId || booking.memberId !== user.id) {
+        return NextResponse.json(
+          { error: 'אין הרשאה למחוק הזמנה זו' },
+          { status: 403 }
+        );
+      }
+    } else {
+      return NextResponse.json(
+        { error: 'גישה נדחתה' },
+        { status: 403 }
+      );
+    }
+
     // בדיקה שטרם עבר הזמן לביטול (24 שעות לפני)
     const now = new Date();
     const bookingTime = new Date(booking.startTime);
@@ -36,8 +71,8 @@ export async function DELETE(
       );
     }
 
-    // החזרת קרדיטים אם נוכו
-    if (booking.creditsUsed && booking.creditsUsed > 0) {
+    // החזרת קרדיטים אם נוכו (רק אם יש memberId)
+    if (booking.creditsUsed && booking.creditsUsed > 0 && booking.memberId) {
       await prisma.member.update({
         where: { id: booking.memberId },
         data: {

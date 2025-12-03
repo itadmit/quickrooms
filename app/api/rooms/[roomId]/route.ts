@@ -2,6 +2,44 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth';
 
+// GET - קבלת פרטי חדר
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { roomId: string } }
+) {
+  try {
+    const { roomId } = params;
+
+    const room = await prisma.meetingRoom.findUnique({
+      where: { id: roomId },
+      include: {
+        space: {
+          select: {
+            id: true,
+            name: true,
+            address: true,
+          },
+        },
+      },
+    });
+
+    if (!room) {
+      return NextResponse.json(
+        { error: 'חדר לא נמצא' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ room });
+  } catch (error) {
+    console.error('Error fetching room:', error);
+    return NextResponse.json(
+      { error: 'שגיאה בטעינת החדר' },
+      { status: 500 }
+    );
+  }
+}
+
 // PUT - עדכון חדר
 export async function PUT(
   request: NextRequest,

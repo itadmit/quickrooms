@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth';
+import { getCache, setCache, getCacheKey, clearCache } from '@/lib/cache';
 
 // GET - קבלת חדרים לפי spaceId
 export async function GET(request: NextRequest) {
@@ -15,6 +16,17 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Check cache
+    const cacheKey = getCacheKey('/api/rooms', searchParams);
+    const cached = getCache<{ rooms: any[] }>(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached, {
+        headers: {
+          'X-Cache': 'HIT',
+        },
+      });
+    }
+
     const rooms = await prisma.meetingRoom.findMany({
       where: { spaceId },
       include: {
@@ -27,7 +39,16 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ rooms });
+    const response = { rooms };
+    
+    // Cache for 60 seconds
+    setCache(cacheKey, response, 60);
+
+    return NextResponse.json(response, {
+      headers: {
+        'X-Cache': 'MISS',
+      },
+    });
   } catch (error) {
     console.error('Error fetching rooms:', error);
     return NextResponse.json(
@@ -106,6 +127,9 @@ export async function POST(request: NextRequest) {
         floor: floor || null,
       },
     });
+
+    // Clear cache for this space's rooms
+    clearCache(`/api/rooms?spaceId=${spaceId}`);
 
     return NextResponse.json({ room }, { status: 201 });
   } catch (error) {

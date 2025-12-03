@@ -1,10 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth';
+import { getCache, setCache, getCacheKey, clearCache } from '@/lib/cache';
 
 // GET - קבלת רשימת כל המתחמים (ציבורי)
 export async function GET(request: NextRequest) {
   try {
+    // Check cache
+    const cacheKey = getCacheKey('/api/spaces');
+    const cached = getCache<{ spaces: any[] }>(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached, {
+        headers: {
+          'X-Cache': 'HIT',
+        },
+      });
+    }
+
     const spaces = await prisma.space.findMany({
       include: {
         owner: {
@@ -26,7 +38,16 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ spaces });
+    const response = { spaces };
+    
+    // Cache for 120 seconds (spaces change less frequently)
+    setCache(cacheKey, response, 120);
+
+    return NextResponse.json(response, {
+      headers: {
+        'X-Cache': 'MISS',
+      },
+    });
   } catch (error) {
     console.error('Error fetching spaces:', error);
     return NextResponse.json(
@@ -70,6 +91,9 @@ export async function POST(request: NextRequest) {
         meetingRooms: true,
       },
     });
+
+    // Clear cache
+    clearCache('/api/spaces');
 
     return NextResponse.json({ space }, { status: 201 });
   } catch (error) {

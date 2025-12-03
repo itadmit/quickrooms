@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth';
+import { sendBookingConfirmation } from '@/lib/notifications';
 
 // GET - קבלת הזמנות
 export async function GET(request: NextRequest) {
@@ -80,6 +81,27 @@ export async function POST(request: NextRequest) {
         { error: 'חדר, זמן התחלה וסיום נדרשים' },
         { status: 400 }
       );
+    }
+
+    // אם זה member booking, צריך authentication
+    if (memberId) {
+      const token = request.cookies.get('auth-token')?.value;
+      if (!token) {
+        return NextResponse.json({ error: 'לא מאומת' }, { status: 401 });
+      }
+
+      const user = await verifyToken(token);
+      if (!user) {
+        return NextResponse.json({ error: 'לא מאומת' }, { status: 401 });
+      }
+
+      // אם זה MEMBER, צריך לוודא שהוא מזמין לעצמו
+      if (user.role === 'MEMBER' && user.id !== memberId) {
+        return NextResponse.json(
+          { error: 'אין הרשאה ליצור הזמנה עבור member אחר' },
+          { status: 403 }
+        );
+      }
     }
 
     const start = new Date(startTime);
@@ -183,6 +205,14 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // בדיקה שהחבר שייך ל-owner של החדר
+      if (member.ownerId !== room.space.ownerId) {
+        return NextResponse.json(
+          { error: 'החבר לא שייך לבעל החדר' },
+          { status: 403 }
+        );
+      }
+
       // חישוב קרדיטים לפי שעות מדויקות (לא מעוגלות)
       const creditsNeeded = Math.ceil(durationHours * room.creditsPerHour);
 
@@ -250,6 +280,14 @@ export async function POST(request: NextRequest) {
         member: true,
       },
     });
+
+    // שליחת התראה על הזמנה מאושרת (רק ל-Members)
+    if (memberId && booking.member) {
+      sendBookingConfirmation(booking.id).catch((error) => {
+        console.error('Error sending booking confirmation:', error);
+        // לא נכשל את ההזמנה אם שליחת ההתראה נכשלה
+      });
+    }
 
     return NextResponse.json({ booking }, { status: 201 });
   } catch (error) {

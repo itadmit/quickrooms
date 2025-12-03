@@ -43,6 +43,13 @@ export async function GET(request: NextRequest) {
       paymeEnvironment: (owner.paymeEnvironment as 'sandbox' | 'production') || 'sandbox',
       paymeWebhookSecret: owner.paymeWebhookSecret || '',
       paymentEnabled: owner.paymentEnabled || false,
+      // Email Settings
+      smtpHost: owner.smtpHost || 'smtp.gmail.com',
+      smtpPort: owner.smtpPort || 587,
+      smtpSecure: owner.smtpSecure || false,
+      smtpUser: owner.smtpUser || '',
+      smtpPass: '', // לא נשלח מסיבות אבטחה
+      emailEnabled: owner.emailEnabled || false,
     };
 
     return NextResponse.json({ settings });
@@ -79,22 +86,49 @@ export async function PUT(request: NextRequest) {
       paymeEnvironment,
       paymeWebhookSecret,
       paymentEnabled,
+      smtpHost,
+      smtpPort,
+      smtpSecure,
+      smtpUser,
+      smtpPass,
+      emailEnabled,
     } = body;
 
+    // טען את ה-Owner הנוכחי כדי לשמור את smtpPass רק אם שונה
+    const currentOwner = await prisma.owner.findUnique({
+      where: { id: user.id },
+      select: { smtpPass: true },
+    });
+
     // עדכון פרטי המנהל
+    const updateData: any = {
+      name: businessName,
+      email,
+      phone,
+      address,
+      allowOveruse,
+      paymeSellerId,
+      paymeEnvironment,
+      paymeWebhookSecret,
+      paymentEnabled,
+      smtpHost: smtpHost || 'smtp.gmail.com',
+      smtpPort: smtpPort ? parseInt(smtpPort) : 587,
+      smtpSecure: smtpSecure || false,
+      smtpUser: smtpUser || null,
+      emailEnabled: emailEnabled || false,
+    };
+
+    // עדכן סיסמה רק אם הועברה (לא ריק)
+    if (smtpPass && smtpPass.trim() !== '') {
+      updateData.smtpPass = smtpPass;
+    } else if (currentOwner?.smtpPass) {
+      // שמור את הסיסמה הקיימת אם לא הועברה חדשה
+      updateData.smtpPass = currentOwner.smtpPass;
+    }
+
     await prisma.owner.update({
       where: { id: user.id },
-      data: {
-        name: businessName,
-        email,
-        phone,
-        address,
-        allowOveruse,
-        paymeSellerId,
-        paymeEnvironment,
-        paymeWebhookSecret,
-        paymentEnabled,
-      },
+      data: updateData,
     });
 
     // כאן אפשר להוסיף שמירה של הגדרות נוספות בטבלה נפרדת אם נרצה

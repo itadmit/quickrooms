@@ -6,9 +6,12 @@
 
 - **Frontend**: Next.js 14, React, Tailwind CSS
 - **Backend**: Next.js API Routes (App Router)
-- **Database**: PostgreSQL עם Prisma ORM
+- **Database**: SQLite עם Prisma ORM
 - **Authentication**: JWT עם cookies
-- **Payments**: PayPal
+- **Payments**: PayMe (QuickPayment) - White-label payment gateway
+- **Email**: SMTP (Google Gmail) - כל Owner מגדיר את ה-SMTP שלו
+- **Notifications**: In-App Notifications + Email
+- **Cron Jobs**: Vercel Cron Jobs לתזכורות ואיפוס קרדיטים
 
 ## התקנה
 
@@ -61,17 +64,21 @@ npm run dev
 - ✅ **לוח זמנים Calendar View (שבועי/חודשי)**
 - ✅ **דוחות ו-Analytics מפורטים** (שימוש קרדיט, הכנסות, חריגות)
 - ✅ **מנגנון איפוס קרדיטים חודשי אוטומטי** (cron endpoint)
-- ✅ **אינטגרציה בסיסית עם PayPal** (יצירת תשלום, webhook)
+- ✅ **אינטגרציה מלאה עם PayMe (QuickPayment)** - Hosted Payment Page, Webhooks, Tokenization
 - ✅ **עמוד תודה אחרי הזמנה/תשלום**
-- ✅ **צפייה בהזמנות חריגות וסליקות PayPal**
+- ✅ **צפייה בהזמנות חריגות וסליקות PayMe**
+- ✅ **העלאת תמונות לחדרים** - העלאה מקומית + תצוגה מקדימה
+- ✅ **Rate Limiting** - הגנה על API routes מפני התקפות
+- ✅ **Caching** - שיפור ביצועים ל-API routes נפוצים
+- ✅ **מערכת Email עם SMTP** - כל Owner מגדיר את ה-SMTP שלו (Google Gmail)
+- ✅ **In-App Notifications** - התראות במערכת עם dropdown
+- ✅ **תזכורות אוטומטיות** - תזכורות להזמנות קרובות (כל 30 דקות)
+- ✅ **Cron Jobs** - איפוס קרדיטים חודשי ותזכורות (Vercel Cron)
+- ✅ **הגדרות Owner ו-Member** - הגדרות נפרדות לכל תפקיד
 
 ### 🚧 נדרש להשלמה/שיפור:
-- ⏳ אינטגרציה מלאה עם PayPal SDK (כרגע יש מבנה בסיסי)
-- ⏳ Webhooks מ-PayPal עם אימות חתימה
-- ⏳ העלאת תמונות לחדרים (כרגע רק URL)
-- ⏳ Rate limiting ו-Caching
 - ⏳ 2FA (אופציונלי לפי האפיון)
-- ⏳ Rate limiting ו-Caching
+- ⏳ דוחות חודשיים אוטומטיים במייל
 
 ## מבנה API Routes
 
@@ -112,13 +119,49 @@ npm run dev
 
 ### Transactions & Payments
 - `GET /api/transactions?type=overuse` - תשלומי חריגה (Owner)
-- `POST /api/paypal/create-payment` - יצירת תשלום PayPal
-- `POST /api/paypal/webhook` - Webhook מ-PayPal
+- `POST /api/payments/create` - יצירת תשלום PayMe
+- `POST /api/payments/webhook` - Webhook מ-PayMe
+- `GET /api/payments/invoice/[bookingId]` - הורדת חשבונית/קבלה
+
+### Notifications
+- `GET /api/notifications` - קבלת התראות של המשתמש
+- `PUT /api/notifications` - עדכון התראה (סימון כנקראה)
+- `DELETE /api/notifications?id=...` - מחיקת התראה
+
+### Settings
+- `GET /api/settings/owner` - קבלת הגדרות Owner
+- `PUT /api/settings/owner` - עדכון הגדרות Owner (כולל SMTP ו-PayMe)
+- `GET /api/settings/member` - קבלת הגדרות Member
+- `PUT /api/settings/member` - עדכון הגדרות Member
+
+### Upload
+- `POST /api/upload` - העלאת תמונות לחדרים (Owner only)
 
 ### Cron Jobs
-- `POST /api/cron/reset-credits` - איפוס קרדיטים חודשי (מוגן ב-API key)
+- `GET /api/cron/reset-credits` - איפוס קרדיטים חודשי (Vercel Cron - פעם ביום)
+- `GET /api/cron/send-reminders` - שליחת תזכורות (Vercel Cron - כל 30 דקות)
+
+## הגדרות נדרשות
+
+### משתני סביבה (`.env`)
+```env
+DATABASE_URL="file:./dev.db"
+JWT_SECRET="your-secret-key-here"
+CRON_SECRET="your-cron-secret" # אופציונלי - רק אם רוצים להפעיל ידנית
+NEXT_PUBLIC_APP_URL="http://localhost:3010" # או ה-URL של הפרודקשן
+```
+
+### הגדרת SMTP (כל Owner מגדיר בעצמו)
+כל Owner מגדיר את ה-SMTP שלו דרך **הגדרות** → **הגדרות אימייל (SMTP)**:
+- SMTP Host: `smtp.gmail.com`
+- SMTP Port: `587` (או `465` ל-SSL)
+- SMTP Username: כתובת Gmail שלך
+- SMTP Password: App Password מ-Google (ראה `CRON_SETUP.md`)
+
+### הגדרת Vercel Cron Jobs
+ראה קובץ `CRON_SETUP.md` להוראות מפורטות.
 
 ## מצב פיתוח
 
-הפרויקט נמצא בשלבי פיתוח מתקדמים. הבסיס הושלם וניתן להתחיל להשתמש במערכת. ראה את קובץ `אפיון.md` לפרטים מלאים.
+הפרויקט נמצא בשלבי פיתוח מתקדמים. כל התכונות העיקריות הושלמו וניתן להשתמש במערכת. ראה את קובץ `CRON_SETUP.md` להגדרת Cron Jobs ו-Email.
 
