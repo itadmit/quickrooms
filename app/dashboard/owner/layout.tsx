@@ -18,7 +18,8 @@ import {
   Search,
   ChevronDown,
   User,
-  Settings
+  Settings,
+  FileText
 } from "lucide-react";
 
 export default function OwnerLayout({
@@ -37,7 +38,9 @@ export default function OwnerLayout({
     { href: "/dashboard/owner/bookings", label: "יומן הזמנות", icon: Calendar },
     { href: "/dashboard/owner/credit-plans", label: "חבילות קרדיט", icon: CreditCard },
     { href: "/dashboard/owner/reports", label: "דוחות ונתונים", icon: BarChart3 },
+    { href: "/dashboard/owner/reports/tax", label: "דוח מס", icon: FileText },
     { href: "/dashboard/owner/overuse-payments", label: "תשלומי חריגה", icon: AlertCircle },
+    { href: "/dashboard/owner/branding", label: "התאמה אישית", icon: Settings },
   ];
 
   const isActive = (path: string) => {
